@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LinguaMaestro — Aprende inglés de verdad</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: #060D1F; }
+  #root { height: 100%; }
+  @keyframes lmB { 0%,80%,100%{transform:translateY(0);opacity:.4} 40%{transform:translateY(-7px);opacity:1} }
+  @keyframes lmS { to { transform: rotate(360deg); } }
+  @keyframes lmFade { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes lmPop { 0%{transform:scale(.85);opacity:0} 60%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+  @keyframes lmPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-thumb { background: rgba(139,92,246,.3); border-radius: 3px; }
+  input::placeholder, textarea::placeholder { color: #2e4060; }
+  button { cursor: pointer; font-family: inherit; }
+  input, select, textarea { font-family: inherit; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.5/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+/* ════════ CONFIGURACIÓN — pega tus 2 claves públicas de Supabase ════════ */
+const SUPABASE_URL      = "https://rgxyasbjjlwzcojjiyum.supabase.co
+";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJneHlhc2Jqamx3emNvamppeXVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2MzM3OTIsImV4cCI6MjA5ODIwOTc5Mn0.97jB31e9f8VZRnw9MgdLmLtHatyLg3b23zFWv6YJT7o
+";
+const CONFIGURED = !SUPABASE_URL.startsWith("PEGA_") && !SUPABASE_ANON_KEY.startsWith("PEGA_");
+const sb = CONFIGURED ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+/* ════════════════════════════════════════════════════════════════
+   🎓  CEREBRO DEL MAESTRO (basado en métodos con respaldo científico)
+   ════════════════════════════════════════════════════════════════ */
+const SP = `Eres LinguaMaestro, un profesor de inglés de élite potenciado por IA, experto en enseñar a hispanohablantes que han tenido dificultades. Tu método es REAL y está basado en evidencia científica de adquisición de segundas lenguas. NO eres genérico ni superficial: diseñas un método funcional y comprobado.
+
+FUNDAMENTOS CIENTÍFICOS QUE APLICAS SIEMPRE:
+- Input comprensible (Krashen): contenido un paso por encima del nivel actual (i+1).
+- Repetición espaciada (curva del olvido de Ebbinghaus): reintroduce vocabulario y estructuras en intervalos crecientes.
+- Práctica de recuperación (retrieval practice): haz que el estudiante recuerde activamente, no que solo reconozca.
+- Output forzado (Swain): obliga con cariño a producir lengua (hablar/escribir), no solo recibir.
+- Vocabulario de alta frecuencia primero (Paul Nation): las primeras ~1000 palabras cubren ~80% del idioma cotidiano; prioriza eso.
+- Enseñanza comunicativa (CLT) y por tareas (TBLT): significado antes que forma; tareas del mundo real.
+- Foco en la forma dentro de la comunicación: la gramática se enseña en contexto, moviéndose de input a output.
+- Interacción con retroalimentación correctiva: corrige los errores con tacto, en el momento, y haz que se autocorrija.
+- Combinas varios métodos (ningún método único basta).
+
+LAS 4 DESTREZAS — cada clase debe trabajar y rotar entre:
+1. 📖 LECTURA COMPRENSIVA: textos cortos adaptados al nivel + preguntas.
+2. 🎧 LISTENING: marca frases para escuchar; dile al estudiante "toca el botón 🔊 para escuchar". Pídele que repita lo que oyó.
+3. 🗣️ PRONUNCIACIÓN y SPEAKING: pide que diga frases en voz alta (puede usar la sección de Pronunciación con micrófono). Da tips fonéticos concretos.
+4. ✍️ PRODUCCIÓN ESCRITA: que escriba sus propias oraciones.
+La meta del curso: que el estudiante TERMINE comprendiendo, leyendo, escuchando y HABLANDO inglés.
+
+INGLÉS REAL Y NATIVO (¡muy importante!):
+No te quedes solo en lo formal/académico. Enseña también cómo hablan los nativos de verdad: expresiones cotidianas, phrasal verbs comunes, slang apropiado, contracciones (gonna, wanna), muletillas naturales. Explica cuándo es formal y cuándo informal.
+
+PERSONALIZACIÓN Y MOTIVACIÓN:
+- ADAPTA TODO a la cotidianidad del estudiante: su rutina, su trabajo, lo que hace cada día. Pregunta por su día a día y usa ESAS situaciones en los ejemplos y ejercicios.
+- Ancla el vocabulario y los ejemplos a SUS INTERESES y gustos (lo que ama) para maximizar la motivación.
+- DINÁMICA DE NIVELES Y COMPETITIVIDAD: trata el avance como un juego. Celebra cuando "sube de nivel", lánzale retos ("¿te atreves con este desafío?"), reconoce rachas y logros con energía. Usa lenguaje de videojuego/logros con naturalidad.
+
+════════ FASES ════════
+🔵 onboarding — Conversación amigable (NO cuestionario). Descubre poco a poco: nombre, por qué quiere inglés ahora (meta emocional), trabajo/hobbies/INTERESES, su RUTINA DIARIA, su personalidad de aprendizaje, qué intentó antes y falló, su bloqueo emocional. CRUCIAL: cuánto tiempo REAL puede dedicar al día y a qué nivel quiere llegar y en cuánto tiempo. Si la meta no es realista para ese tiempo, valida su entusiasmo, explícale con honestidad qué es alcanzable, y propón el plan MÁS CERCANO posible a su sueño pero real (ofrécele opciones; él decide). Máx 2 preguntas por mensaje. Con suficiente contexto (5-7 intercambios) → fase=placement.
+
+🔴 placement — Prueba de nivelación tipo "exploración". En 4-5 mensajes: vocabulario, gramática, comprensión lectora (texto+preguntas), y producción escrita. Determina nivel con matiz: Principiante Absoluto / Principiante / Elemental / Pre-Intermedio / Intermedio / Intermedio-Alto. → fase=curriculum.
+
+🟢 curriculum — Presenta con entusiasmo: nivel exacto + fortalezas; oportunidades de mejora; la METODOLOGÍA elegida para ESTA persona y POR QUÉ (cítale los principios reales: input comprensible, repetición espaciada, alta frecuencia, las 4 destrezas, inglés nativo), conectada a su rutina, intereses y tiempo; mapa de ruta con niveles/etapas y metas realistas; cómo serán las clases. Al confirmar → fase=learning, leccion=1.
+
+🟡 learning — CLASES DIARIAS. Estructura flexible: 1) Warm-up con repaso espaciado gamificado. 2) Contenido nuevo (máx 5-7 elementos) anclado a sus intereses y rutina. 3) Trabaja al menos una de las 4 destrezas a fondo (rota entre clases: lectura, listening con 🔊, pronunciación, escritura). 4) Incluye de vez en cuando una pizca de inglés nativo/cotidiano. 5) Ejercicios variados (mín 2 tipos). 6) Misión del mundo real conectada a su día. 7) Cierre con logro tipo nivel + adelanto + frase motivadora. Cuando diga "siguiente/continúa" → siguiente lección de inmediato. Sube el número de lección por clase. Cada 10 lecciones → fase=assessment.
+
+🟠 assessment — Evaluación (cada 10 lecciones): prueba de las 4 destrezas (10-12 ítems). Análisis de progreso, logros celebrados, refuerzos. → fase=learning.
+
+════════ FORMATO ════════
+150-420 palabras. Varía SIEMPRE la estructura. Creativo: historias, personajes, retos, humor.
+📝 EJERCICIO: | 🎯 MISIÓN: | 📊 EVALUACIÓN: | 📌 GRAMÁTICA: | 📖 LECTURA: | 🎧 LISTENING: | 🗣️ PRONUNCIACIÓN: | 💬 INGLÉS REAL: | 🏆 LOGRO: | 💡 TIP:
+**negrita** palabras en inglés y conceptos clave | *cursiva* traducciones | listas con •
+Para listening, escribe la frase en inglés y dile que toque 🔊 para oírla.
+IDIOMA PROGRESIVO: Principiante Absoluto 95% español · Principiante 85% · Elemental 70% · Pre-Intermedio 50% · Intermedio 25% · Intermedio-Alto casi todo inglés.
+
+════════ META OBLIGATORIO (última línea SIEMPRE; el sistema la oculta) ════════
+[META: fase=FASE, nombre=NOMBRE_O_null, nivel=NIVEL_O_null, leccion=NUMERO]
+fase exacta: onboarding, placement, curriculum, learning o assessment.`;
+
+/* Prompts de generación (devuelven JSON) */
+const GEN = {
+  vocab: (lvl,intereses)=>`Genera vocabulario para un estudiante de inglés de nivel "${lvl}". Intereses del estudiante: "${intereses||'general, vida cotidiana'}".
+Devuelve SOLO JSON válido (sin markdown, sin texto extra): un array de 8 objetos con EXACTAMENTE esta forma:
+{"en":"palabra o frase en inglés","es":"traducción","ejemplo_en":"oración de ejemplo en inglés","ejemplo_es":"traducción del ejemplo","tip":"breve tip de uso o pronunciación"}
+Reglas: prioriza vocabulario de ALTA FRECUENCIA y útil. Relaciona los ejemplos con los intereses y la vida cotidiana del estudiante. Apropiado al nivel.`,
+  exercises: (lvl,intereses)=>`Genera ejercicios de inglés para nivel "${lvl}". Intereses: "${intereses||'general'}".
+Devuelve SOLO JSON válido (sin markdown): array de 5 objetos con forma:
+{"tipo":"opcion|completar|traducir","pregunta":"enunciado (en inglés o mezcla según nivel)","opciones":["a","b","c","d"],"respuesta":"respuesta correcta exacta","explicacion":"por qué, en español"}
+"opciones" SOLO para tipo "opcion" (4 opciones, una correcta). Para "completar" usa ___ en la pregunta. Mezcla los 3 tipos. Relaciona con sus intereses. Apropiado al nivel.`,
+  game: (lvl,intereses)=>`Genera datos para un juego de relacionar emoji-palabra en inglés. Nivel "${lvl}". Intereses: "${intereses||'general'}".
+Devuelve SOLO JSON válido (sin markdown): array de 6 objetos con forma:
+{"emoji":"UN emoji claro y representativo","en":"palabra en inglés","es":"traducción"}
+Reglas: elige sustantivos CONCRETOS que se representen claramente con un solo emoji. Cuando sea posible, relaciónalos con los intereses del estudiante. Apropiado al nivel.`,
+  culture: (lvl)=>`Genera contenido cultural y de inglés nativo para nivel "${lvl}".
+Devuelve SOLO JSON válido (sin markdown): array de 6 objetos con forma:
+{"tipo":"curiosidad|expresion","titulo":"título corto","contenido":"explicación clara en español","ejemplo":"ejemplo en inglés (o '' si no aplica)","emoji":"un emoji"}
+Mezcla 3 curiosidades culturales del mundo angloparlante con 3 expresiones cotidianas/slang REALES que usan los nativos (con significado y cómo se usan). Interesante y variado.`,
+  pron: (lvl,intereses)=>`Genera frases para practicar pronunciación en inglés, nivel "${lvl}". Intereses: "${intereses||'vida cotidiana'}".
+Devuelve SOLO JSON válido (sin markdown): array de 6 objetos con forma:
+{"en":"frase corta y natural en inglés","es":"traducción"}
+Frases útiles y cotidianas, apropiadas al nivel, relacionadas con sus intereses cuando se pueda.`,
+};
+
+/* ════════ Utilidades ════════ */
+function parseMeta(txt){const m=txt.match(/\n?\[META:\s*([^\]]+)\]/);if(!m)return{clean:txt,meta:null};const meta={};m[1].split(",").forEach(p=>{const i=p.indexOf("=");if(i>-1){const k=p.slice(0,i).trim(),v=p.slice(i+1).trim();meta[k]=v==="null"?null:v;}});return{clean:txt.replace(/\n?\[META:[^\]]+\]/g,"").trim(),meta};}
+function fmt(t){if(!t)return"";return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\*\*([^*\n]+)\*\*/g,'<strong style="color:#FBBF24;font-weight:600">$1</strong>').replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g,'<em style="color:#C4B5FD">$1</em>').replace(/`([^`\n]+)`/g,'<code style="background:rgba(139,92,246,.18);padding:1px 5px;border-radius:4px;font-family:monospace;font-size:.87em;color:#DDD6FE">$1</code>');}
+function jsonExtract(text){let t=text.replace(/```json/gi,"").replace(/```/g,"").trim();const a=t.indexOf("["),b=t.lastIndexOf("]");if(a>-1&&b>-1)t=t.slice(a,b+1);return JSON.parse(t);}
+function norm(s){return (s||"").toLowerCase().replace(/[^a-z0-9áéíóúñ\s]/gi,"").replace(/\s+/g," ").trim();}
+function simWords(target,said){const t=norm(target),s=new Set(norm(said).split(" "));if(!t)return 0;const tw=t.split(" ");const hit=tw.filter(w=>s.has(w)).length;return Math.round(100*hit/tw.length);}
+
+/* Voz del navegador (listening) — gratis, sin API */
+function speak(text,rate=0.95){try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=rate;const vs=window.speechSynthesis.getVoices();const v=vs.find(x=>x.lang&&x.lang.toLowerCase().startsWith("en"));if(v)u.voice=v;window.speechSynthesis.speak(u);}catch(e){}}
+try{window.speechSynthesis&&window.speechSynthesis.getVoices();}catch(e){}
+function SpeakBtn({text,size=15}){return <button onClick={()=>speak(text)} title="Escuchar" style={{background:"rgba(14,165,233,.12)",border:"1px solid rgba(14,165,233,.3)",borderRadius:6,padding:"2px 7px",color:"#7DD3FC",fontSize:size}}>🔊</button>;}
+
+/* Reconocimiento de voz (pronunciación) */
+function recognizeOnce(){return new Promise((res,rej)=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){rej("unsupported");return;}const r=new SR();r.lang="en-US";r.interimResults=false;r.maxAlternatives=3;let done=false;r.onresult=e=>{done=true;res([...e.results[0]].map(a=>a.transcript));};r.onerror=e=>rej(e.error||"error");r.onend=()=>{if(!done)rej("nospeech");};try{r.start();}catch(e){rej("error");}});}
+
+/* Llamada al profesor / generadores */
+async function callChat(messages, system){
+  const res = await fetch("/.netlify/functions/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({system,messages})});
+  if(res.status===503) return {noApi:true};
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error?.message||"API error");
+  return {text:(data.content||[]).map(b=>b.text||"").join("")};
+}
+async function genJSON(system,userPrompt){
+  const r = await callChat([{role:"user",content:userPrompt}], system);
+  if(r.noApi) return {noApi:true};
+  return {data: jsonExtract(r.text)};
+}
+
+const PH={onboarding:{l:"Bienvenida",c:"#60A5FA",i:"👋"},placement:{l:"Nivelación",c:"#F472B6",i:"📊"},curriculum:{l:"Tu plan",c:"#34D399",i:"🗺️"},learning:{l:"Aprendizaje",c:"#FCD34D",i:"📚"},assessment:{l:"Evaluación",c:"#FB923C",i:"🏆"}};
+const FRESH={name:null,level:"Por determinar",lessons:0,phase:"onboarding",start:null};
+const SEC={"📝":["rgba(139,92,246,.1)","rgba(139,92,246,.3)","#C4B5FD"],"🎯":["rgba(59,130,246,.1)","rgba(59,130,246,.3)","#93C5FD"],"📊":["rgba(245,158,11,.1)","rgba(245,158,11,.3)","#FCD34D"],"📌":["rgba(16,185,129,.1)","rgba(16,185,129,.3)","#6EE7B7"],"📖":["rgba(16,185,129,.1)","rgba(16,185,129,.3)","#6EE7B7"],"🎧":["rgba(14,165,233,.1)","rgba(14,165,233,.3)","#7DD3FC"],"🗣️":["rgba(236,72,153,.1)","rgba(236,72,153,.3)","#F9A8D4"],"💬":["rgba(168,85,247,.1)","rgba(168,85,247,.3)","#D8B4FE"],"🏆":["rgba(251,191,36,.12)","rgba(251,191,36,.35)","#FDE68A"],"🌟":["rgba(251,191,36,.1)","rgba(251,191,36,.3)","#FDE68A"],"💡":["rgba(14,165,233,.1)","rgba(14,165,233,.3)","#7DD3FC"]};
+
+function Msg({text}){return <div>{text.split("\n").map((l,i)=>{
+  if(!l.trim())return <div key={i} style={{height:7}}/>;
+  const se=Object.keys(SEC).find(e=>l.startsWith(e));
+  if(se){const[bg,bd,c]=SEC[se];return <div key={i} style={{background:bg,border:`1px solid ${bd}`,borderRadius:8,padding:"9px 13px",margin:"8px 0",color:c,fontWeight:600,fontSize:"0.82rem"}}>{l}</div>;}
+  if(/^[\-•]\s/.test(l))return <div key={i} style={{display:"flex",gap:8,marginBottom:5,paddingLeft:4}}><span style={{color:"#8B5CF6",flexShrink:0,paddingTop:2}}>•</span><span dangerouslySetInnerHTML={{__html:fmt(l.replace(/^[\-•]\s+/,""))}} style={{lineHeight:1.6}}/></div>;
+  const nm=l.match(/^(\d+)\.\s+(.+)/);
+  if(nm)return <div key={i} style={{display:"flex",gap:9,marginBottom:6}}><span style={{color:"#8B5CF6",fontWeight:700,minWidth:18,flexShrink:0}}>{nm[1]}.</span><span dangerouslySetInnerHTML={{__html:fmt(nm[2])}} style={{lineHeight:1.6}}/></div>;
+  if(/^[-=]{3,}$/.test(l.trim()))return <hr key={i} style={{border:"none",borderTop:"1px solid rgba(139,92,246,.18)",margin:"10px 0"}}/>;
+  return <div key={i} style={{marginBottom:4,lineHeight:1.65}}><span dangerouslySetInnerHTML={{__html:fmt(l)}}/></div>;
+})}</div>;}
+function Dots(){return <div style={{display:"flex",gap:5,alignItems:"center",padding:"4px 0"}}>{[0,1,2].map(j=><div key={j} style={{width:7,height:7,borderRadius:"50%",background:"#8B5CF6",animation:`lmB 1.3s ${j*.18}s ease-in-out infinite`}}/>)}</div>;}
+function Spinner({label}){return <div style={{textAlign:"center",padding:40,color:"#5B7099"}}><div style={{fontSize:32,animation:"lmS 1.6s linear infinite",display:"inline-block"}}>🌐</div><div style={{marginTop:10,fontSize:"0.82rem"}}>{label||"Generando..."}</div></div>;}
+function NoApi(){return <div style={{background:"rgba(245,158,11,.1)",border:"1px solid rgba(245,158,11,.3)",borderRadius:10,padding:16,color:"#FCD34D",fontSize:"0.82rem",textAlign:"center"}}>⚙️ Falta activar la IA. Agrega <strong>ANTHROPIC_API_KEY</strong> en Netlify y haz redeploy.</div>;}
+
+const card={background:"#0A1226",border:"1px solid rgba(139,92,246,.15)",borderRadius:14,padding:18};
+const btnP={background:"linear-gradient(135deg,#7C3AED,#1D4ED8)",border:"none",color:"#fff",borderRadius:9,padding:"9px 16px",fontSize:"0.8rem",fontWeight:700};
+const btnG={background:"rgba(139,92,246,.08)",border:"1px solid rgba(139,92,246,.2)",color:"#A78BFA",borderRadius:9,padding:"9px 14px",fontSize:"0.78rem",fontWeight:600};
+
+/* ════════ LOGIN ════════ */
+function Auth({onAuth}){
+  const [mode,setMode]=useState("login"),[email,setEmail]=useState(""),[pass,setPass]=useState(""),[busy,setBusy]=useState(false),[msg,setMsg]=useState(null);
+  async function submit(){
+    if(!email.trim()||!pass.trim()){setMsg({t:"err",x:"Completa correo y contraseña."});return;}
+    if(pass.length<6){setMsg({t:"err",x:"La contraseña debe tener al menos 6 caracteres."});return;}
+    setBusy(true);setMsg(null);
+    try{
+      if(mode==="signup"){const{data,error}=await sb.auth.signUp({email:email.trim(),password:pass});if(error)throw error;if(data.session)onAuth(data.session);else{setMsg({t:"ok",x:"¡Cuenta creada! Confírmala en tu correo e inicia sesión."});setMode("login");}}
+      else{const{data,error}=await sb.auth.signInWithPassword({email:email.trim(),password:pass});if(error)throw error;onAuth(data.session);}
+    }catch(e){let x=e.message||"";if(x.includes("Invalid login"))x="Correo o contraseña incorrectos.";else if(x.includes("already registered"))x="Ese correo ya tiene cuenta.";else if(x.includes("Email not confirmed"))x="Confirma tu correo primero.";setMsg({t:"err",x});}
+    setBusy(false);
+  }
+  const inS={width:"100%",background:"#0D1B32",border:"1px solid rgba(139,92,246,.25)",borderRadius:10,padding:"12px 14px",color:"#E2E8F0",fontSize:"0.9rem",outline:"none",marginBottom:11};
+  return <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"radial-gradient(circle at 30% 20%,#0E1838,#060D1F 70%)",padding:20,fontFamily:"system-ui,-apple-system,sans-serif"}}>
+    <div style={{width:"100%",maxWidth:380,animation:"lmFade .4s ease"}}>
+      <div style={{textAlign:"center",marginBottom:26}}><div style={{fontSize:46,marginBottom:8}}>🌐</div><div style={{fontSize:"1.7rem",fontWeight:800,color:"#fff",letterSpacing:"-.03em"}}>LinguaMaestro</div><div style={{color:"#5B7099",fontSize:"0.82rem",marginTop:5}}>Aprende inglés de verdad, con un método real</div></div>
+      <div style={{background:"#0A1226",border:"1px solid rgba(139,92,246,.18)",borderRadius:16,padding:24,boxShadow:"0 8px 30px rgba(0,0,0,.4)"}}>
+        <div style={{display:"flex",gap:6,marginBottom:18,background:"#0D1B32",borderRadius:10,padding:4}}>{[["login","Iniciar sesión"],["signup","Crear cuenta"]].map(([k,lb])=><button key={k} onClick={()=>{setMode(k);setMsg(null);}} style={{flex:1,padding:"8px",borderRadius:7,border:"none",fontSize:"0.8rem",fontWeight:600,background:mode===k?"linear-gradient(135deg,#7C3AED,#1D4ED8)":"transparent",color:mode===k?"#fff":"#5B7099"}}>{lb}</button>)}</div>
+        <input style={inS} type="email" placeholder="tu@correo.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()}/>
+        <input style={inS} type="password" placeholder="Contraseña (mín. 6)" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()}/>
+        {msg&&<div style={{fontSize:"0.78rem",padding:"9px 12px",borderRadius:8,marginBottom:11,background:msg.t==="err"?"rgba(239,68,68,.12)":"rgba(16,185,129,.12)",border:`1px solid ${msg.t==="err"?"rgba(239,68,68,.3)":"rgba(16,185,129,.3)"}`,color:msg.t==="err"?"#FCA5A5":"#6EE7B7"}}>{msg.x}</div>}
+        <button onClick={submit} disabled={busy} style={{width:"100%",padding:"12px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#7C3AED,#1D4ED8)",color:"#fff",fontWeight:700,fontSize:"0.9rem",opacity:busy?.6:1}}>{busy?"Un momento...":(mode==="signup"?"Crear mi cuenta":"Entrar")}</button>
+      </div>
+      <div style={{textAlign:"center",marginTop:16,fontSize:"0.62rem",color:"#2A3A50"}}>Powered by Claude · Supabase · Netlify</div>
+    </div>
+  </div>;
+}
+
+/* ════════ SECCIÓN: PROFESOR (chat con las 4 destrezas) ════════ */
+function Profesor({st, save, addXP}){
+  const [inp,setInp]=useState(""),[load,setLoad]=useState(false),[boot,setBoot]=useState(st.msgs.length>0?false:true),[noApi,setNoApi]=useState(false);
+  const endR=useRef(null),inpR=useRef(null);
+  const QA=[{i:"📖",l:"Siguiente lección",m:"Siguiente lección, por favor."},{i:"🔄",l:"Repasar",m:"Quiero repasar lo de las últimas clases."},{i:"🗣️",l:"Conversar",m:"Quiero practicar una conversación en inglés."},{i:"💬",l:"Inglés real",m:"Enséñame una expresión cotidiana que usen los nativos."},{i:"❓",l:"Tengo una duda",m:"Tengo una pregunta sobre lo que vimos."}];
+  useEffect(()=>{if(st.msgs.length===0)welcome();},[]);
+  useEffect(()=>{setTimeout(()=>endR.current?.scrollIntoView({behavior:"smooth"}),60);},[st.msgs,load]);
+
+  async function welcome(){setLoad(true);await run([],true);setBoot(false);setLoad(false);}
+  async function run(history,isWelcome){
+    let apiM=isWelcome?[{role:"user",content:"[INICIO] Primera vez del estudiante. Salúdalo cálidamente, preséntate, explica en 2-3 líneas que tu método es real y basado en ciencia (input comprensible, repetición espaciada, las 4 destrezas, inglés nativo), e inicia el onboarding con 1-2 preguntas. Entusiasta. Incluye [META:]."}]:history.slice(-26).map(m=>({role:m.role,content:m.content}));
+    while(apiM.length>0&&apiM[0].role==="assistant")apiM=apiM.slice(1);
+    try{
+      const r=await callChat(apiM,SP);
+      if(r.noApi){setNoApi(true);const ph={role:"assistant",ts:Date.now(),content:"⚙️ **Ya casi**\n\nLogin y base de datos funcionan. Falta encender al profesor: agrega `ANTHROPIC_API_KEY` en Netlify y haz redeploy."};const nm=isWelcome?[ph]:[...history,ph];save({msgs:nm});return;}
+      const{clean,meta}=parseMeta(r.text);
+      const aiMsg={role:"assistant",content:clean,ts:Date.now()};
+      const nm=isWelcome?[aiMsg]:[...history,aiMsg];
+      const pv=st.prof;
+      const newLesson=meta?.leccion?(parseInt(meta.leccion)||pv.lessons):pv.lessons;
+      if(newLesson>pv.lessons) addXP(15*(newLesson-pv.lessons));
+      const np={...pv,phase:meta?.fase||pv.phase,name:meta?.nombre??pv.name,level:meta?.nivel??pv.level,lessons:newLesson,start:pv.start||Date.now()};
+      save({msgs:nm,prof:np});
+    }catch(e){const er={role:"assistant",content:"❌ Error de conexión. Intenta de nuevo.",ts:Date.now()};save({msgs:isWelcome?[er]:[...history,er]});}
+  }
+  async function send(txt){const t=(txt??inp).trim();if(!t||load)return;setInp("");setLoad(true);const nm=[...st.msgs,{role:"user",content:t,ts:Date.now()}];save({msgs:nm});await run(nm,false);setLoad(false);setTimeout(()=>inpR.current?.focus(),60);}
+
+  if(boot)return <Spinner label="Tu profesor se está preparando..."/>;
+  return <div style={{display:"flex",flexDirection:"column",height:"100%"}}>
+    {noApi&&<div style={{padding:"0 0 10px"}}><NoApi/></div>}
+    <div style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",gap:13,paddingRight:4}}>
+      {st.msgs.map((m,i)=>(
+        <div key={i} style={{display:"flex",flexDirection:m.role==="user"?"row-reverse":"row",gap:8,alignItems:"flex-start"}}>
+          <div style={{width:28,height:28,borderRadius:"50%",flexShrink:0,marginTop:3,background:m.role==="assistant"?"linear-gradient(135deg,#7C3AED,#1D4ED8)":"rgba(59,130,246,.18)",border:m.role==="user"?"1px solid rgba(59,130,246,.3)":"none",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12}}>{m.role==="assistant"?"🌐":"👤"}</div>
+          <div style={{maxWidth:"76%",background:m.role==="user"?"linear-gradient(135deg,rgba(30,86,200,.65),rgba(100,44,180,.65))":"#0D1B32",border:m.role==="assistant"?"1px solid rgba(139,92,246,.18)":"1px solid rgba(139,92,246,.25)",borderLeft:m.role==="assistant"?"3px solid #8B5CF6":undefined,borderRadius:m.role==="user"?"16px 4px 16px 16px":"4px 16px 16px 16px",padding:"12px 14px",boxShadow:"0 2px 5px rgba(0,0,0,.22)"}}>
+            {m.role==="assistant"?<div><Msg text={m.content}/><div style={{marginTop:8}}><SpeakBtn text={m.content.replace(/[*_`#•]/g,"")}/></div></div>:<span style={{lineHeight:1.6}}>{m.content}</span>}
+          </div>
+        </div>
+      ))}
+      {load&&<div style={{display:"flex",gap:8}}><div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#7C3AED,#1D4ED8)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12}}>🌐</div><div style={{background:"#0D1B32",border:"1px solid rgba(139,92,246,.18)",borderLeft:"3px solid #8B5CF6",borderRadius:"4px 16px 16px 16px",padding:"12px 15px"}}><Dots/></div></div>}
+      <div ref={endR}/>
+    </div>
+    <div style={{display:"flex",gap:6,flexWrap:"wrap",margin:"10px 0"}}>{QA.map(q=><button key={q.l} onClick={()=>send(q.m)} disabled={load} style={{background:"rgba(139,92,246,.08)",border:"1px solid rgba(139,92,246,.16)",borderRadius:20,padding:"5px 11px",color:"#94A3B8",fontSize:"0.68rem",opacity:load?.5:1}}>{q.i} {q.l}</button>)}</div>
+    <div style={{display:"flex",gap:8,alignItems:"flex-end"}}>
+      <textarea ref={inpR} value={inp} onChange={e=>setInp(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}}} placeholder="Escribe tu mensaje... (Enter para enviar)" rows={1} disabled={load} style={{flex:1,background:"#0D1B32",border:"1px solid rgba(139,92,246,.22)",borderRadius:10,padding:"11px 14px",color:"#E2E8F0",fontSize:"0.875rem",resize:"none",outline:"none",lineHeight:1.5,maxHeight:100,overflowY:"auto",opacity:load?.65:1}}/>
+      <button onClick={()=>send()} disabled={load||!inp.trim()} style={{height:42,padding:"0 18px",borderRadius:10,border:"none",background:(!inp.trim()||load)?"rgba(139,92,246,.2)":"linear-gradient(135deg,#7C3AED,#1D4ED8)",color:"#E2E8F0",fontWeight:700,fontSize:"0.85rem",opacity:(!inp.trim()||load)?.6:1}}>{load?"···":"Enviar →"}</button>
+    </div>
+  </div>;
+}
+
+/* ════════ SECCIÓN: VOCABULARIO ════════ */
+function Vocabulario({st, save, addXP}){
+  const [cards,setCards]=useState(null),[flip,setFlip]=useState({}),[load,setLoad]=useState(false),[noApi,setNoApi]=useState(false),[err,setErr]=useState(null);
+  async function gen(){setLoad(true);setErr(null);setFlip({});try{const r=await genJSON(GEN.vocab(st.prof.level,st.interests),"Genera el vocabulario ahora.");if(r.noApi){setNoApi(true);}else setCards(r.data);}catch(e){setErr("No se pudo generar. Intenta de nuevo.");}setLoad(false);}
+  function master(i,w){if(st.mastered.includes(w))return;save({mastered:[...st.mastered,w]});addXP(5);}
+  return <div>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:10}}>
+      <div><div style={{fontSize:"1.05rem",fontWeight:700}}>📔 Vocabulario</div><div style={{fontSize:"0.74rem",color:"#5B7099",marginTop:2}}>Palabras útiles ligadas a lo que te gusta · {st.mastered.length} dominadas</div></div>
+      <button onClick={gen} disabled={load} style={btnP}>{load?"Generando...":(cards?"↻ Nuevas palabras":"✨ Generar vocabulario")}</button>
+    </div>
+    {noApi&&<NoApi/>}
+    {err&&<div style={{...card,borderColor:"rgba(239,68,68,.3)",color:"#FCA5A5",fontSize:"0.82rem",marginBottom:12}}>{err}</div>}
+    {load&&!cards&&<Spinner label="Eligiendo las mejores palabras para ti..."/>}
+    {!cards&&!load&&!noApi&&<div style={{...card,textAlign:"center",color:"#5B7099",padding:40}}>Toca "Generar vocabulario" para recibir palabras personalizadas según tu nivel y tus intereses.</div>}
+    {cards&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12}}>
+      {cards.map((c,i)=>{const open=flip[i],done=st.mastered.includes(c.en);return(
+        <div key={i} style={{...card,padding:14,animation:"lmPop .3s ease",cursor:"pointer",position:"relative",borderColor:done?"rgba(16,185,129,.4)":"rgba(139,92,246,.15)"}} onClick={()=>setFlip(f=>({...f,[i]:!f[i]}))}>
+          {done&&<div style={{position:"absolute",top:8,right:10,fontSize:13,color:"#6EE7B7"}}>✓</div>}
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+            <span style={{fontSize:"1.1rem",fontWeight:700,color:"#E2E8F0"}}>{c.en}</span>
+            <span onClick={e=>{e.stopPropagation();speak(c.en);}}><SpeakBtn text={c.en}/></span>
+          </div>
+          <div style={{fontSize:"0.82rem",color:"#C4B5FD",marginBottom:open?8:0}}>{c.es}</div>
+          {open&&<div style={{animation:"lmFade .25s ease",borderTop:"1px solid rgba(139,92,246,.15)",paddingTop:8,marginTop:4}}>
+            <div style={{fontSize:"0.8rem",marginBottom:3}}><span dangerouslySetInnerHTML={{__html:fmt("**"+c.ejemplo_en+"**")}}/> <span onClick={e=>{e.stopPropagation();speak(c.ejemplo_en);}}><SpeakBtn text={c.ejemplo_en} size={12}/></span></div>
+            <div style={{fontSize:"0.76rem",color:"#94A3B8",fontStyle:"italic",marginBottom:6}}>{c.ejemplo_es}</div>
+            {c.tip&&<div style={{fontSize:"0.72rem",color:"#7DD3FC"}}>💡 {c.tip}</div>}
+            {!done&&<button onClick={e=>{e.stopPropagation();master(i,c.en);}} style={{...btnG,marginTop:8,padding:"5px 10px",fontSize:"0.7rem"}}>✓ Ya la domino (+5 XP)</button>}
+          </div>}
+          {!open&&<div style={{fontSize:"0.66rem",color:"#3D5070",marginTop:6}}>Toca para ver ejemplo</div>}
+        </div>
+      );})}
+    </div>}
+  </div>;
+}
+
+/* ════════ SECCIÓN: EJERCICIOS EXPRESS ════════ */
+function Ejercicios({st, addXP}){
+  const [qs,setQs]=useState(null),[idx,setIdx]=useState(0),[ans,setAns]=useState(""),[checked,setChecked]=useState(false),[score,setScore]=useState(0),[load,setLoad]=useState(false),[noApi,setNoApi]=useState(false),[done,setDone]=useState(false);
+  async function gen(){setLoad(true);setQs(null);setIdx(0);setScore(0);setDone(false);setAns("");setChecked(false);try{const r=await genJSON(GEN.exercises(st.prof.level,st.interests),"Genera los ejercicios ahora.");if(r.noApi)setNoApi(true);else setQs(r.data);}catch(e){}setLoad(false);}
+  const q=qs&&qs[idx];
+  function check(){if(checked||!ans.trim())return;setChecked(true);const ok=norm(ans)===norm(q.respuesta);if(ok){setScore(s=>s+1);addXP(10);}}
+  function next(){if(idx+1>=qs.length){setDone(true);}else{setIdx(i=>i+1);setAns("");setChecked(false);}}
+  const ok=checked&&norm(ans)===norm(q.respuesta);
+  return <div>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:10}}>
+      <div><div style={{fontSize:"1.05rem",fontWeight:700}}>⚡ Ejercicios express</div><div style={{fontSize:"0.74rem",color:"#5B7099",marginTop:2}}>Retos rápidos personalizados · +10 XP por acierto</div></div>
+      <button onClick={gen} disabled={load} style={btnP}>{load?"Generando...":(qs?"↻ Nuevos ejercicios":"✨ Empezar")}</button>
+    </div>
+    {noApi&&<NoApi/>}
+    {load&&<Spinner label="Preparando tus retos..."/>}
+    {!qs&&!load&&!noApi&&<div style={{...card,textAlign:"center",color:"#5B7099",padding:40}}>Ejercicios cortos generados a tu medida (opción múltiple, completar y traducir).</div>}
+    {qs&&!done&&q&&<div style={{...card,animation:"lmFade .3s ease"}}>
+      <div style={{display:"flex",justifyContent:"space-between",fontSize:"0.7rem",color:"#5B7099",marginBottom:12}}><span>Pregunta {idx+1} de {qs.length}</span><span>Aciertos: {score}</span></div>
+      <div style={{fontSize:"0.95rem",marginBottom:14,lineHeight:1.5}}><span dangerouslySetInnerHTML={{__html:fmt(q.pregunta)}}/> {q.tipo!=="traducir"&&<SpeakBtn text={q.pregunta}/>}</div>
+      {q.tipo==="opcion"&&q.opciones?(
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>{q.opciones.map((o,i)=>{const sel=ans===o;const correct=checked&&norm(o)===norm(q.respuesta);const wrong=checked&&sel&&!correct;return <button key={i} onClick={()=>!checked&&setAns(o)} style={{textAlign:"left",padding:"10px 13px",borderRadius:9,fontSize:"0.85rem",border:`1px solid ${correct?"rgba(16,185,129,.5)":wrong?"rgba(239,68,68,.5)":sel?"rgba(139,92,246,.5)":"rgba(139,92,246,.16)"}`,background:correct?"rgba(16,185,129,.12)":wrong?"rgba(239,68,68,.1)":sel?"rgba(139,92,246,.12)":"transparent",color:"#E2E8F0"}}>{o} {correct?"✓":wrong?"✗":""}</button>;})}</div>
+      ):(
+        <input value={ans} onChange={e=>setAns(e.target.value)} onKeyDown={e=>e.key==="Enter"&&(checked?next():check())} disabled={checked} placeholder="Tu respuesta..." style={{width:"100%",background:"#0D1B32",border:`1px solid ${checked?(ok?"rgba(16,185,129,.5)":"rgba(239,68,68,.5)"):"rgba(139,92,246,.25)"}`,borderRadius:9,padding:"11px 13px",color:"#E2E8F0",fontSize:"0.9rem",outline:"none"}}/>
+      )}
+      {checked&&<div style={{marginTop:12,padding:"10px 13px",borderRadius:9,background:ok?"rgba(16,185,129,.1)":"rgba(239,68,68,.08)",border:`1px solid ${ok?"rgba(16,185,129,.3)":"rgba(239,68,68,.25)"}`}}>
+        <div style={{fontSize:"0.82rem",fontWeight:700,color:ok?"#6EE7B7":"#FCA5A5",marginBottom:4}}>{ok?"🏆 ¡Correcto! +10 XP":"Respuesta correcta: "+q.respuesta}</div>
+        {q.explicacion&&<div style={{fontSize:"0.78rem",color:"#94A3B8"}}>{q.explicacion}</div>}
+      </div>}
+      <div style={{marginTop:14,display:"flex",justifyContent:"flex-end"}}>{!checked?<button onClick={check} disabled={!ans.trim()} style={{...btnP,opacity:ans.trim()?1:.5}}>Comprobar</button>:<button onClick={next} style={btnP}>{idx+1>=qs.length?"Ver resultado":"Siguiente →"}</button>}</div>
+    </div>}
+    {done&&<div style={{...card,textAlign:"center",animation:"lmPop .4s ease"}}>
+      <div style={{fontSize:44,marginBottom:8}}>{score===qs.length?"🏆":score>=qs.length/2?"🎉":"💪"}</div>
+      <div style={{fontSize:"1.2rem",fontWeight:800,marginBottom:4}}>{score} / {qs.length} correctas</div>
+      <div style={{fontSize:"0.82rem",color:"#5B7099",marginBottom:16}}>Ganaste {score*10} XP en esta ronda</div>
+      <button onClick={gen} style={btnP}>↻ Otra ronda</button>
+    </div>}
+  </div>;
+}
+
+/* ════════ SECCIÓN: PRONUNCIACIÓN ════════ */
+function Pronunciacion({st, addXP}){
+  const [phrases,setPhrases]=useState(null),[load,setLoad]=useState(false),[noApi,setNoApi]=useState(false),[rec,setRec]=useState(null),[result,setResult]=useState({});
+  const supported=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
+  async function gen(){setLoad(true);setPhrases(null);setResult({});try{const r=await genJSON(GEN.pron(st.prof.level,st.interests),"Genera las frases ahora.");if(r.noApi)setNoApi(true);else setPhrases(r.data);}catch(e){}setLoad(false);}
+  async function tryRec(i,target){setRec(i);setResult(r=>({...r,[i]:null}));try{const alts=await recognizeOnce();const best=Math.max(...alts.map(a=>simWords(target,a)));const said=alts[0];setResult(r=>({...r,[i]:{score:best,said}}));if(best>=70)addXP(8);}catch(e){setResult(r=>({...r,[i]:{error:e==="unsupported"?"Tu navegador no soporta micrófono. Usa Chrome.":e==="nospeech"?"No te escuché, intenta otra vez.":"No se pudo acceder al micrófono."}}));}setRec(null);}
+  return <div>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:10}}>
+      <div><div style={{fontSize:"1.05rem",fontWeight:700}}>🗣️ Pronunciación</div><div style={{fontSize:"0.74rem",color:"#5B7099",marginTop:2}}>Escucha con 🔊, repite con 🎤 y recibe tu puntaje · +8 XP</div></div>
+      <button onClick={gen} disabled={load} style={btnP}>{load?"Generando...":(phrases?"↻ Nuevas frases":"✨ Empezar")}</button>
+    </div>
+    {!supported&&<div style={{...card,borderColor:"rgba(245,158,11,.3)",color:"#FCD34D",fontSize:"0.8rem",marginBottom:12}}>⚠️ El micrófono funciona mejor en Chrome o Edge. Aun así puedes escuchar con 🔊.</div>}
+    {noApi&&<NoApi/>}
+    {load&&<Spinner label="Preparando frases para hablar..."/>}
+    {!phrases&&!load&&!noApi&&<div style={{...card,textAlign:"center",color:"#5B7099",padding:40}}>Practica diciendo frases reales en voz alta. El sistema te escucha y te dice qué tan bien lo dijiste.</div>}
+    {phrases&&<div style={{display:"flex",flexDirection:"column",gap:10}}>
+      {phrases.map((p,i)=>{const r=result[i];return(
+        <div key={i} style={{...card,padding:14,animation:"lmFade .25s ease"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+            <span style={{fontSize:"0.98rem",fontWeight:600}}>{p.en}</span><SpeakBtn text={p.en}/>
+          </div>
+          <div style={{fontSize:"0.78rem",color:"#94A3B8",fontStyle:"italic",marginBottom:10}}>{p.es}</div>
+          <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+            <button onClick={()=>tryRec(i,p.en)} disabled={rec!==null} style={{...btnG,display:"flex",alignItems:"center",gap:6,animation:rec===i?"lmPulse 1s infinite":"none",borderColor:rec===i?"rgba(236,72,153,.5)":"rgba(139,92,246,.2)",color:rec===i?"#F9A8D4":"#A78BFA"}}>🎤 {rec===i?"Escuchando...":"Hablar"}</button>
+            {r&&!r.error&&<div style={{display:"flex",alignItems:"center",gap:8}}><div style={{fontWeight:800,fontSize:"1.05rem",color:r.score>=70?"#6EE7B7":r.score>=40?"#FCD34D":"#FCA5A5"}}>{r.score}%</div><div style={{fontSize:"0.74rem",color:"#5B7099"}}>{r.score>=70?"🏆 ¡Muy bien!":r.score>=40?"Casi, sigue practicando":"Inténtalo otra vez"}</div></div>}
+            {r&&r.error&&<div style={{fontSize:"0.74rem",color:"#FCA5A5"}}>{r.error}</div>}
+          </div>
+          {r&&!r.error&&r.said&&<div style={{fontSize:"0.72rem",color:"#5B7099",marginTop:8}}>Escuché: "{r.said}"</div>}
+        </div>
+      );})}
+    </div>}
+  </div>;
+}
+
+/* ════════ SECCIÓN: JUEGOS (relacionar emoji-palabra) ════════ */
+function Juegos({st, addXP}){
+  const [pool,setPool]=useState(null),[load,setLoad]=useState(false),[noApi,setNoApi]=useState(false),[round,setRound]=useState(null),[feedback,setFeedback]=useState(null),[streak,setStreak]=useState(0);
+  async function gen(){setLoad(true);setPool(null);setStreak(0);try{const r=await genJSON(GEN.game(st.prof.level,st.interests),"Genera el juego ahora.");if(r.noApi)setNoApi(true);else{setPool(r.data);newRound(r.data);}}catch(e){}setLoad(false);}
+  function newRound(data){const p=data||pool;if(!p)return;setFeedback(null);const correct=p[Math.floor(Math.random()*p.length)];const opts=[correct];while(opts.length<Math.min(4,p.length)){const c=p[Math.floor(Math.random()*p.length)];if(!opts.find(o=>o.en===c.en))opts.push(c);}opts.sort(()=>Math.random()-.5);setRound({correct,opts});}
+  function pick(o){if(feedback)return;if(o.en===round.correct.en){setFeedback("ok");setStreak(s=>s+1);addXP(5);setTimeout(()=>newRound(),900);}else{setFeedback(o.en);setStreak(0);}}
+  return <div>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:10}}>
+      <div><div style={{fontSize:"1.05rem",fontWeight:700}}>🎮 Juegos</div><div style={{fontSize:"0.74rem",color:"#5B7099",marginTop:2}}>Relaciona la imagen con la palabra · +5 XP · 🔥 Racha: {streak}</div></div>
+      <button onClick={gen} disabled={load} style={btnP}>{load?"Generando...":(pool?"↻ Nuevo set":"✨ Jugar")}</button>
+    </div>
+    {noApi&&<NoApi/>}
+    {load&&<Spinner label="Armando el juego..."/>}
+    {!pool&&!load&&!noApi&&<div style={{...card,textAlign:"center",color:"#5B7099",padding:40}}>Mira el emoji y elige la palabra correcta en inglés. ¡Encadena aciertos para subir tu racha!</div>}
+    {round&&<div style={{...card,textAlign:"center",padding:"28px 18px"}}>
+      <div style={{fontSize:84,marginBottom:6,animation:"lmPop .3s ease"}} key={round.correct.en}>{round.correct.emoji}</div>
+      <div style={{fontSize:"0.74rem",color:"#5B7099",marginBottom:18}}>¿Cómo se dice en inglés?</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,maxWidth:420,margin:"0 auto"}}>
+        {round.opts.map((o,i)=>{const isCorrect=feedback&&o.en===round.correct.en;const isWrong=feedback&&feedback===o.en;return <button key={i} onClick={()=>pick(o)} style={{padding:"14px",borderRadius:11,fontSize:"0.95rem",fontWeight:600,border:`1px solid ${isCorrect?"rgba(16,185,129,.5)":isWrong?"rgba(239,68,68,.5)":"rgba(139,92,246,.2)"}`,background:isCorrect?"rgba(16,185,129,.14)":isWrong?"rgba(239,68,68,.1)":"rgba(139,92,246,.07)",color:"#E2E8F0"}}>{o.en} {isCorrect?"✓":isWrong?"✗":""}</button>;})}
+      </div>
+      {feedback==="ok"&&<div style={{marginTop:14,color:"#6EE7B7",fontWeight:700,fontSize:"0.9rem"}}>🏆 ¡Correcto! +5 XP</div>}
+      {feedback&&feedback!=="ok"&&<div style={{marginTop:14}}><div style={{color:"#FCA5A5",fontSize:"0.85rem",marginBottom:8}}>Era: <strong>{round.correct.en}</strong> ({round.correct.es})</div><button onClick={()=>newRound()} style={btnP}>Siguiente →</button></div>}
+    </div>}
+  </div>;
+}
+
+/* ════════ SECCIÓN: CULTURA E INGLÉS NATIVO ════════ */
+function Cultura({st}){
+  const [items,setItems]=useState(null),[load,setLoad]=useState(false),[noApi,setNoApi]=useState(false);
+  async function gen(){setLoad(true);setItems(null);try{const r=await genJSON(GEN.culture(st.prof.level),"Genera el contenido ahora.");if(r.noApi)setNoApi(true);else setItems(r.data);}catch(e){}setLoad(false);}
+  return <div>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:10}}>
+      <div><div style={{fontSize:"1.05rem",fontWeight:700}}>🌍 Cultura e inglés real</div><div style={{fontSize:"0.74rem",color:"#5B7099",marginTop:2}}>Curiosidades + cómo hablan los nativos de verdad</div></div>
+      <button onClick={gen} disabled={load} style={btnP}>{load?"Generando...":(items?"↻ Más":"✨ Descubrir")}</button>
+    </div>
+    {noApi&&<NoApi/>}
+    {load&&<Spinner label="Buscando datos fascinantes..."/>}
+    {!items&&!load&&!noApi&&<div style={{...card,textAlign:"center",color:"#5B7099",padding:40}}>Curiosidades del mundo angloparlante y expresiones cotidianas/slang que usan los nativos.</div>}
+    {items&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:12}}>
+      {items.map((it,i)=>(
+        <div key={i} style={{...card,padding:16,animation:"lmPop .3s ease",borderColor:it.tipo==="expresion"?"rgba(168,85,247,.25)":"rgba(52,211,153,.22)"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+            <span style={{fontSize:24}}>{it.emoji||(it.tipo==="expresion"?"💬":"🌟")}</span>
+            <span style={{fontWeight:700,fontSize:"0.9rem"}}>{it.titulo}</span>
+          </div>
+          <span style={{fontSize:"0.62rem",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em",color:it.tipo==="expresion"?"#D8B4FE":"#6EE7B7"}}>{it.tipo==="expresion"?"Inglés real":"Curiosidad"}</span>
+          <div style={{fontSize:"0.83rem",color:"#CBD5E1",lineHeight:1.55,margin:"7px 0"}}>{it.contenido}</div>
+          {it.ejemplo&&<div style={{fontSize:"0.8rem",background:"rgba(139,92,246,.08)",borderRadius:7,padding:"7px 10px",display:"flex",alignItems:"center",gap:7}}><em style={{color:"#C4B5FD"}}>{it.ejemplo}</em><SpeakBtn text={it.ejemplo} size={12}/></div>}
+        </div>
+      ))}
+    </div>}
+  </div>;
+}
+
+/* ════════ XP / NIVEL ════════ */
+function levelFromXP(xp){return Math.floor(xp/100)+1;}
+function xpInLevel(xp){return xp%100;}
+
+/* ════════ APP DEL ESTUDIANTE (con pestañas) ════════ */
+const TABS=[{k:"prof",i:"🎓",l:"Profesor"},{k:"vocab",i:"📔",l:"Vocabulario"},{k:"ejer",i:"⚡",l:"Ejercicios"},{k:"pron",i:"🗣️",l:"Pronunciación"},{k:"juegos",i:"🎮",l:"Juegos"},{k:"cultura",i:"🌍",l:"Cultura"}];
+function StudentApp({session, onLogout, backToAdmin}){
+  const uid=session.user.id;
+  const [boot,setBoot]=useState(true),[tab,setTab]=useState("prof"),[xpFlash,setXpFlash]=useState(null),[editInt,setEditInt]=useState(false),[intDraft,setIntDraft]=useState("");
+  const stRef=useRef({msgs:[],prof:{...FRESH},interests:"",xp:0,streak:0,lastDay:null,mastered:[]});
+  const [,force]=useState(0); const rerender=()=>force(x=>x+1);
+
+  useEffect(()=>{init();},[]);
+  async function init(){
+    try{const{data}=await sb.from("student_state").select("data").eq("user_id",uid).maybeSingle();if(data?.data){const d=data.data;stRef.current={msgs:d.msgs||[],prof:{...FRESH,...(d.prof||{})},interests:d.interests||"",xp:d.xp||0,streak:d.streak||0,lastDay:d.lastDay||null,mastered:d.mastered||[]};}}catch(e){console.error(e);}
+    // racha diaria
+    const today=new Date().toISOString().slice(0,10);const s=stRef.current;
+    if(s.lastDay!==today){const yest=new Date(Date.now()-864e5).toISOString().slice(0,10);s.streak=(s.lastDay===yest)?(s.streak||0)+1:1;s.lastDay=today;persist();}
+    setIntDraft(stRef.current.interests);
+    setBoot(false);
+  }
+  async function persist(){try{const s=stRef.current;await sb.from("student_state").upsert({user_id:uid,data:{msgs:s.msgs.slice(-60),prof:s.prof,interests:s.interests,xp:s.xp,streak:s.streak,lastDay:s.lastDay,mastered:s.mastered},updated_at:new Date().toISOString()});}catch(e){console.error(e);}}
+  function save(patch){Object.assign(stRef.current,patch);rerender();persist();}
+  function addXP(n){const before=levelFromXP(stRef.current.xp);stRef.current.xp+=n;const after=levelFromXP(stRef.current.xp);setXpFlash("+"+n+" XP");setTimeout(()=>setXpFlash(null),1400);if(after>before){setTimeout(()=>{setXpFlash("🎉 ¡Nivel "+after+"!");setTimeout(()=>setXpFlash(null),1800);},300);}rerender();persist();}
+
+  if(boot)return <div style={{height:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"#060D1F",color:"#E2E8F0",gap:16,fontFamily:"system-ui,sans-serif"}}><div style={{fontSize:52,animation:"lmS 2.5s linear infinite"}}>🌐</div><div style={{fontSize:"1.9rem",fontWeight:800,color:"#8B5CF6"}}>LinguaMaestro</div><div style={{color:"#4B6080",fontSize:".85rem"}}>Cargando tu progreso...</div></div>;
+
+  const s=stRef.current,lvl=levelFromXP(s.xp),ph=PH[s.prof.phase]||PH.onboarding;
+  const props={st:s,save,addXP};
+  return <div style={{height:"100vh",display:"flex",flexDirection:"column",background:"#060D1F",color:"#E2E8F0",overflow:"hidden",fontFamily:"system-ui,-apple-system,sans-serif",fontSize:14}}>
+    {xpFlash&&<div style={{position:"fixed",top:64,left:"50%",transform:"translateX(-50%)",zIndex:50,background:"linear-gradient(135deg,#7C3AED,#1D4ED8)",color:"#fff",padding:"8px 18px",borderRadius:20,fontWeight:800,fontSize:"0.85rem",boxShadow:"0 6px 20px rgba(124,58,237,.5)",animation:"lmPop .3s ease"}}>{xpFlash}</div>}
+    {/* Header */}
+    <div style={{height:52,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 16px",borderBottom:"1px solid rgba(139,92,246,.18)",background:"#080F22",flexShrink:0}}>
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <div style={{width:32,height:32,borderRadius:8,background:"linear-gradient(135deg,#7C3AED,#1D4ED8)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>🌐</div>
+        <div><div style={{fontWeight:700,fontSize:"0.95rem"}}>LinguaMaestro</div><div style={{fontSize:"0.6rem",color:"#3D5070"}}>Aprende inglés de verdad</div></div>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:8}}>
+        <span style={{background:`${ph.c}18`,border:`1px solid ${ph.c}38`,color:ph.c,borderRadius:16,padding:"3px 11px",fontSize:"0.66rem",fontWeight:600}}>{ph.i} {ph.l}</span>
+        {s.prof.level!=="Por determinar"&&<span style={{background:"rgba(139,92,246,.12)",border:"1px solid rgba(139,92,246,.25)",color:"#A78BFA",borderRadius:16,padding:"3px 10px",fontSize:"0.66rem",fontWeight:600}}>{s.prof.level}</span>}
+        {backToAdmin&&<button onClick={backToAdmin} style={{background:"rgba(59,130,246,.12)",border:"1px solid rgba(59,130,246,.3)",color:"#93C5FD",borderRadius:6,padding:"4px 10px",fontSize:"0.68rem"}}>← Panel</button>}
+        <button onClick={onLogout} style={{background:"rgba(139,92,246,.08)",border:"1px solid rgba(139,92,246,.2)",color:"#94A3B8",borderRadius:6,padding:"4px 10px",fontSize:"0.68rem"}}>Salir</button>
+      </div>
+    </div>
+    <div style={{flex:1,display:"flex",overflow:"hidden"}}>
+      {/* Sidebar */}
+      <div style={{width:204,background:"#080F22",borderRight:"1px solid rgba(139,92,246,.12)",display:"flex",flexDirection:"column",flexShrink:0,overflow:"auto"}}>
+        <div style={{padding:14,display:"flex",flexDirection:"column",gap:12,height:"100%"}}>
+          {/* Nivel / XP */}
+          <div style={{background:"linear-gradient(135deg,rgba(124,58,237,.18),rgba(29,78,216,.14))",border:"1px solid rgba(139,92,246,.22)",borderRadius:12,padding:13,textAlign:"center"}}>
+            <div style={{fontSize:"0.6rem",color:"#A78BFA",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:700}}>Nivel</div>
+            <div style={{fontSize:"1.8rem",fontWeight:800,color:"#fff",lineHeight:1.1}}>{lvl}</div>
+            <div style={{height:6,background:"rgba(0,0,0,.3)",borderRadius:4,overflow:"hidden",margin:"7px 0 4px"}}><div style={{width:`${xpInLevel(s.xp)}%`,height:"100%",background:"linear-gradient(90deg,#8B5CF6,#3B82F6)"}}/></div>
+            <div style={{fontSize:"0.62rem",color:"#8B5CF6"}}>{s.xp} XP · {100-xpInLevel(s.xp)} para el siguiente</div>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <div style={{flex:1,background:"rgba(251,146,60,.1)",border:"1px solid rgba(251,146,60,.25)",borderRadius:9,padding:"8px",textAlign:"center"}}><div style={{fontSize:"1.1rem",fontWeight:800,color:"#FB923C"}}>🔥{s.streak}</div><div style={{fontSize:"0.56rem",color:"#5B7099"}}>RACHA</div></div>
+            <div style={{flex:1,background:"rgba(16,185,129,.08)",border:"1px solid rgba(16,185,129,.22)",borderRadius:9,padding:"8px",textAlign:"center"}}><div style={{fontSize:"1.1rem",fontWeight:800,color:"#34D399"}}>{s.prof.lessons}</div><div style={{fontSize:"0.56rem",color:"#5B7099"}}>LECCIONES</div></div>
+          </div>
+          {/* Tabs */}
+          <div style={{display:"flex",flexDirection:"column",gap:4}}>
+            <div style={{fontSize:"0.57rem",color:"#3D5070",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,marginBottom:2}}>SECCIONES</div>
+            {TABS.map(t=><button key={t.k} onClick={()=>setTab(t.k)} style={{display:"flex",alignItems:"center",gap:9,padding:"9px 11px",borderRadius:9,border:"none",textAlign:"left",fontSize:"0.78rem",fontWeight:tab===t.k?700:500,background:tab===t.k?"linear-gradient(135deg,rgba(124,58,237,.25),rgba(29,78,216,.18))":"transparent",color:tab===t.k?"#fff":"#94A3B8",borderLeft:tab===t.k?"2px solid #8B5CF6":"2px solid transparent"}}><span style={{fontSize:15}}>{t.i}</span>{t.l}</button>)}
+          </div>
+          {/* Intereses */}
+          <div style={{marginTop:"auto",background:"rgba(139,92,246,.06)",borderRadius:10,padding:11}}>
+            <div style={{fontSize:"0.58rem",color:"#5B7099",textTransform:"uppercase",letterSpacing:"0.06em",fontWeight:700,marginBottom:6}}>⭐ Mis intereses</div>
+            {editInt?(
+              <div>
+                <textarea value={intDraft} onChange={e=>setIntDraft(e.target.value)} rows={3} placeholder="Ej: fútbol, videojuegos, cocina, viajes..." style={{width:"100%",background:"#0D1B32",border:"1px solid rgba(139,92,246,.25)",borderRadius:7,padding:"7px 9px",color:"#E2E8F0",fontSize:"0.72rem",resize:"none",outline:"none",marginBottom:6}}/>
+                <div style={{display:"flex",gap:6}}><button onClick={()=>{save({interests:intDraft.trim()});setEditInt(false);}} style={{...btnP,padding:"5px 10px",fontSize:"0.68rem",flex:1}}>Guardar</button><button onClick={()=>{setIntDraft(s.interests);setEditInt(false);}} style={{...btnG,padding:"5px 10px",fontSize:"0.68rem"}}>×</button></div>
+              </div>
+            ):(
+              <div onClick={()=>setEditInt(true)} style={{cursor:"pointer"}}><div style={{fontSize:"0.74rem",color:s.interests?"#CBD5E1":"#3D5070",lineHeight:1.4}}>{s.interests||"Toca para añadir lo que te gusta"}</div><div style={{fontSize:"0.62rem",color:"#8B5CF6",marginTop:4}}>✎ Editar</div></div>
+            )}
+            <div style={{fontSize:"0.6rem",color:"#3D5070",marginTop:7,lineHeight:1.4}}>Personaliza vocabulario, ejercicios y juegos.</div>
+          </div>
+        </div>
+      </div>
+      {/* Contenido */}
+      <div style={{flex:1,overflow:tab==="prof"?"hidden":"auto",padding:tab==="prof"?"16px 18px":"20px 24px"}}>
+        <div style={{maxWidth:tab==="prof"?"100%":920,margin:"0 auto",height:tab==="prof"?"100%":"auto"}}>
+          {tab==="prof"&&<Profesor {...props}/>}
+          {tab==="vocab"&&<Vocabulario {...props}/>}
+          {tab==="ejer"&&<Ejercicios {...props}/>}
+          {tab==="pron"&&<Pronunciacion {...props}/>}
+          {tab==="juegos"&&<Juegos {...props}/>}
+          {tab==="cultura"&&<Cultura {...props}/>}
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+/* ════════ PANEL DE ADMIN ════════ */
+function Admin({session, onLogout, onTeach}){
+  const [students,setStudents]=useState(null),[err,setErr]=useState(null),[busy,setBusy]=useState(false),[showCreate,setShowCreate]=useState(false);
+  const [nEmail,setNEmail]=useState(""),[nPass,setNPass]=useState(""),[nName,setNName]=useState(""),[cMsg,setCMsg]=useState(null);
+  async function api(action,extra={}){const{data:{session:ss}}=await sb.auth.getSession();const res=await fetch("/.netlify/functions/admin",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${ss.access_token}`},body:JSON.stringify({action,...extra})});const d=await res.json();if(!res.ok)throw new Error(d.error||"Error");return d;}
+  async function refresh(){setErr(null);try{const d=await api("list");setStudents(d.students);}catch(e){setErr(e.message);}}
+  useEffect(()=>{refresh();},[]);
+  async function create(){setCMsg(null);if(!nEmail.trim()||!nPass.trim()){setCMsg({t:"err",x:"Completa correo y contraseña."});return;}setBusy(true);try{await api("create",{email:nEmail.trim(),password:nPass,name:nName.trim()});setCMsg({t:"ok",x:"¡Estudiante creado!"});setNEmail("");setNPass("");setNName("");await refresh();setTimeout(()=>{setShowCreate(false);setCMsg(null);},1100);}catch(e){setCMsg({t:"err",x:e.message});}setBusy(false);}
+  async function del(id,email){if(!confirm(`¿Eliminar a ${email}? Se borra su cuenta y progreso.`))return;setBusy(true);try{await api("delete",{id});await refresh();}catch(e){alert(e.message);}setBusy(false);}
+  const PHB=(p)=>{const i=PH[p]||PH.onboarding;return <span style={{background:`${i.c}18`,border:`1px solid ${i.c}38`,color:i.c,borderRadius:12,padding:"2px 8px",fontSize:"0.64rem",fontWeight:600,whiteSpace:"nowrap"}}>{i.i} {i.l}</span>;};
+  const sList=students?students.filter(s=>s.role!=="admin"):[];
+  const active=sList.filter(s=>s.phase==="learning"||s.phase==="assessment").length;
+  const totL=sList.reduce((a,s)=>a+(s.lessons||0),0);
+  const inS={width:"100%",background:"#0D1B32",border:"1px solid rgba(139,92,246,.25)",borderRadius:9,padding:"10px 12px",color:"#E2E8F0",fontSize:"0.85rem",outline:"none",marginBottom:9};
+  return <div style={{height:"100vh",display:"flex",flexDirection:"column",background:"#060D1F",color:"#E2E8F0",overflow:"hidden",fontFamily:"system-ui,-apple-system,sans-serif",fontSize:14}}>
+    <div style={{height:52,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 18px",borderBottom:"1px solid rgba(139,92,246,.18)",background:"#080F22",flexShrink:0}}>
+      <div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:32,height:32,borderRadius:8,background:"linear-gradient(135deg,#7C3AED,#1D4ED8)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>🌐</div><div><div style={{fontWeight:700,fontSize:"0.95rem"}}>LinguaMaestro</div><div style={{fontSize:"0.6rem",color:"#3D5070"}}>Panel de administración</div></div></div>
+      <div style={{display:"flex",alignItems:"center",gap:8}}><button onClick={onTeach} style={{background:"rgba(124,58,237,.15)",border:"1px solid rgba(124,58,237,.35)",color:"#C4B5FD",borderRadius:7,padding:"6px 12px",fontSize:"0.72rem",fontWeight:600}}>🎓 Probar como estudiante</button><button onClick={onLogout} style={{background:"rgba(139,92,246,.08)",border:"1px solid rgba(139,92,246,.2)",color:"#94A3B8",borderRadius:6,padding:"5px 12px",fontSize:"0.7rem"}}>Salir</button></div>
+    </div>
+    <div style={{flex:1,overflow:"auto",padding:"22px 24px"}}><div style={{maxWidth:1000,margin:"0 auto"}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:12,marginBottom:20}}>
+        {[["👥","Estudiantes",sList.length,"#8B5CF6"],["🔥","Aprendiendo activo",active,"#34D399"],["📚","Lecciones totales",totL,"#FCD34D"]].map(([ic,lb,vl,c])=><div key={lb} style={{...card,padding:"14px 18px"}}><div style={{fontSize:"0.7rem",color:"#5B7099",marginBottom:6}}>{ic} {lb}</div><div style={{fontSize:"1.7rem",fontWeight:800,color:c}}>{vl}</div></div>)}
+      </div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><div style={{fontSize:"1rem",fontWeight:700}}>Estudiantes</div><div style={{display:"flex",gap:8}}><button onClick={refresh} style={btnG}>↻ Actualizar</button><button onClick={()=>setShowCreate(v=>!v)} style={btnP}>+ Nuevo estudiante</button></div></div>
+      {showCreate&&<div style={{...card,marginBottom:16,animation:"lmFade .25s ease"}}>
+        <div style={{fontSize:"0.85rem",fontWeight:700,marginBottom:12}}>Crear cuenta de estudiante</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}><input style={inS} placeholder="Nombre (opcional)" value={nName} onChange={e=>setNName(e.target.value)}/><input style={inS} type="email" placeholder="Correo" value={nEmail} onChange={e=>setNEmail(e.target.value)}/></div>
+        <input style={inS} placeholder="Contraseña temporal (mín. 6)" value={nPass} onChange={e=>setNPass(e.target.value)}/>
+        {cMsg&&<div style={{fontSize:"0.76rem",padding:"8px 11px",borderRadius:7,marginBottom:9,background:cMsg.t==="err"?"rgba(239,68,68,.12)":"rgba(16,185,129,.12)",border:`1px solid ${cMsg.t==="err"?"rgba(239,68,68,.3)":"rgba(16,185,129,.3)"}`,color:cMsg.t==="err"?"#FCA5A5":"#6EE7B7"}}>{cMsg.x}</div>}
+        <div style={{display:"flex",gap:8}}><button onClick={create} disabled={busy} style={{...btnP,opacity:busy?.6:1}}>{busy?"Creando...":"Crear"}</button><button onClick={()=>{setShowCreate(false);setCMsg(null);}} style={btnG}>Cancelar</button></div>
+      </div>}
+      {err&&<div style={{...card,borderColor:"rgba(239,68,68,.3)",color:"#FCA5A5",marginBottom:14,fontSize:"0.82rem"}}>⚠️ {err}</div>}
+      {students===null?<Spinner label="Cargando..."/>:sList.length===0?<div style={{...card,textAlign:"center",padding:40,color:"#5B7099"}}>Aún no hay estudiantes. Crea el primero arriba.</div>:(
+        <div style={{...card,padding:0,overflow:"hidden"}}><div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:"0.8rem",minWidth:680}}>
+          <thead><tr style={{background:"rgba(139,92,246,.06)"}}>{["Estudiante","Nivel","Fase","Lecciones","Mensajes","Última act.",""].map(h=><th key={h} style={{textAlign:"left",padding:"11px 14px",color:"#5B7099",fontWeight:600,fontSize:"0.68rem",textTransform:"uppercase",letterSpacing:"0.04em",whiteSpace:"nowrap"}}>{h}</th>)}</tr></thead>
+          <tbody>{sList.map(s=>(<tr key={s.id} style={{borderTop:"1px solid rgba(139,92,246,.08)"}}>
+            <td style={{padding:"11px 14px"}}><div style={{fontWeight:600}}>{s.name||"—"}</div><div style={{fontSize:"0.68rem",color:"#5B7099"}}>{s.email}</div></td>
+            <td style={{padding:"11px 14px",color:"#C4B5FD"}}>{s.level}</td><td style={{padding:"11px 14px"}}>{PHB(s.phase)}</td>
+            <td style={{padding:"11px 14px",fontWeight:700,textAlign:"center"}}>{s.lessons}</td><td style={{padding:"11px 14px",textAlign:"center",color:"#94A3B8"}}>{s.messages}</td>
+            <td style={{padding:"11px 14px",color:"#5B7099",fontSize:"0.72rem",whiteSpace:"nowrap"}}>{s.last_active?new Date(s.last_active).toLocaleDateString("es",{day:"numeric",month:"short"}):"—"}</td>
+            <td style={{padding:"11px 14px"}}><button onClick={()=>del(s.id,s.email)} disabled={busy} style={{background:"rgba(239,68,68,.1)",border:"1px solid rgba(239,68,68,.25)",color:"#FCA5A5",borderRadius:6,padding:"4px 9px",fontSize:"0.68rem"}}>Eliminar</button></td>
+          </tr>))}</tbody>
+        </table></div></div>
+      )}
+      <div style={{textAlign:"center",marginTop:24,fontSize:"0.66rem",color:"#2A3A50"}}>La Etapa 2 (suscripciones) se añadirá sobre esta misma base.</div>
+    </div></div>
+  </div>;
+}
+
+/* ════════ RAÍZ ════════ */
+function Root(){
+  const [session,setSession]=useState(null),[ready,setReady]=useState(false),[role,setRole]=useState(null),[asStudent,setAsStudent]=useState(false);
+  useEffect(()=>{if(!CONFIGURED){setReady(true);return;}sb.auth.getSession().then(({data})=>{setSession(data.session);setReady(true);});const{data:sub}=sb.auth.onAuthStateChange((_e,s)=>{setSession(s);if(!s){setRole(null);setAsStudent(false);}});return()=>sub.subscription.unsubscribe();},[]);
+  useEffect(()=>{if(!session){setRole(null);return;}(async()=>{try{const{data}=await sb.from("profiles").select("role").eq("id",session.user.id).maybeSingle();setRole(data?.role||"student");}catch{setRole("student");}})();},[session]);
+  if(!CONFIGURED)return <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#060D1F",padding:24,fontFamily:"system-ui,sans-serif"}}><div style={{maxWidth:440,background:"#0A1226",border:"1px solid rgba(245,158,11,.3)",borderRadius:16,padding:28,color:"#E2E8F0"}}><div style={{fontSize:38,marginBottom:12,textAlign:"center"}}>⚙️</div><div style={{fontSize:"1.1rem",fontWeight:700,marginBottom:12,color:"#FCD34D",textAlign:"center"}}>Falta conectar Supabase</div><div style={{fontSize:"0.85rem",color:"#94A3B8",lineHeight:1.7}}>Abre <code style={{background:"rgba(139,92,246,.18)",padding:"1px 6px",borderRadius:4,color:"#DDD6FE"}}>index.html</code> y pega tu Project URL y anon key en la sección CONFIGURACIÓN.</div></div></div>;
+  if(!ready||(session&&role===null))return <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#060D1F"}}><div style={{fontSize:46,animation:"lmS 2.5s linear infinite"}}>🌐</div></div>;
+  if(!session)return <Auth onAuth={setSession}/>;
+  const logout=async()=>{await sb.auth.signOut();setSession(null);setRole(null);setAsStudent(false);};
+  if(role==="admin"&&!asStudent)return <Admin session={session} onLogout={logout} onTeach={()=>setAsStudent(true)}/>;
+  return <StudentApp key={asStudent?"stu":"main"} session={session} onLogout={logout} backToAdmin={role==="admin"?()=>setAsStudent(false):null}/>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Root/>);
+</script>
+</body>
+</html>
