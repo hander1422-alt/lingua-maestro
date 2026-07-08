@@ -32,7 +32,7 @@
 const { useState, useEffect, useRef } = React;
 
 /* ════════ CONFIGURACIÓN — pega tus 2 claves públicas de Supabase ════════ */
-const SUPABASE_URL      = "https://rgxyasbjjlwzcojjiyum.supabase.com";
+const SUPABASE_URL      = "https://rgxyasbjjlwzcojjiyum.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJneHlhc2Jqamx3emNvamppeXVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2MzM3OTIsImV4cCI6MjA5ODIwOTc5Mn0.97jB31e9f8VZRnw9MgdLmLtHatyLg3b23zFWv6YJT7o";
 const CONFIGURED = !SUPABASE_URL.startsWith("PEGA_") && !SUPABASE_ANON_KEY.startsWith("PEGA_");
 const sb = CONFIGURED ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
